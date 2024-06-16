@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+version = 0.1
+dependencies = [ "numpy", "pandas", "rdkit", "sklearn"]
+name = "HTSCluster"
+authors = [{ name = "Matthew Martinez", email = "mpmartinez896@gmail.com" }]
+description = "A small package to cluster data from a high throughput chemical screen, and query for neighboring compounds"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    # Language support
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+
+    # License
+    "License :: OSI Approved :: BSD License",
+]
+
+
+[project.urls]
+Homepage = ""
