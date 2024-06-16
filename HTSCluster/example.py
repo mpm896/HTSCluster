@@ -5,8 +5,8 @@ import numpy as np
 import polars as pl
 import pandas as pd
 
-from src.cluster import ChemicalCluster
-from src.utils.utils import (
+from .cluster import ChemicalCluster
+from .utils.utils import (
     insert_clusters, 
     insert_mols,
     mols_to_img, 
@@ -47,5 +47,6 @@ df_with_mols = insert_mols(img_arrays, new_df)
 
 # %%
 write_xlsx(df_with_mols)
+
 
 # %%
