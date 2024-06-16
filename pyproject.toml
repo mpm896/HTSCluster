@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-version = 0.1
+version = "0.1"
 dependencies = [ "numpy", "pandas", "rdkit", "sklearn", "xlsxwriter"]
 name = "HTSCluster"
 authors = [{ name = "Matthew Martinez", email = "mpmartinez896@gmail.com" }]
@@ -25,4 +25,4 @@ classifiers = [
 
 
 [project.urls]
-Homepage = ""
+Homepage = "https://github.com/mpm896/HTSCluster"
