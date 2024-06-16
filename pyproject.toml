@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 version = 0.1
-dependencies = [ "numpy", "pandas", "rdkit", "sklearn"]
+dependencies = [ "numpy", "pandas", "rdkit", "sklearn", "xlsxwriter"]
 name = "HTSCluster"
 authors = [{ name = "Matthew Martinez", email = "mpmartinez896@gmail.com" }]
 description = "A small package to cluster data from a high throughput chemical screen, and query for neighboring compounds"

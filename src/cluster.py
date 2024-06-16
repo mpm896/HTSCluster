@@ -32,7 +32,7 @@ class ChemicalCluster:
         self.cluster_type: str = cluster_type
         self.reduce = reduce
         if cluster_type == "KMeans":
-            self.n_clusters: Optional[int] = n_clusters if n_clusters > 0 else None
+            self.n_clusters: Optional[int] = n_clusters if n_clusters is not None and n_clusters > 0 else None
         self.do_sillhoute: bool = do_sillhoute
 
 
@@ -41,7 +41,7 @@ class ChemicalCluster:
         df: pl.DataFrame, 
         sim_cutoff: float = 0.8, 
         column_name: str = "SMILES"
-    ) -> List[int]:
+    ) -> np.ndarray[int]:
         """
         Cluster compounds based on the SMILES strings
 
@@ -53,14 +53,15 @@ class ChemicalCluster:
         """
         assert column_name in df.columns
 
-        mols: List[Mol] = [Chem.MolFromSmiles(s) for s in df.SMILES]
+        mols: List[Mol] = [Chem.MolFromSmiles(s) for s in df[column_name]]
         if self.cluster_type == "Butina":
-            return self.cluster_mols(mols, sim_cutoff=sim_cutoff)
-        self.clusters = self._cluster_mols(mols)
+            self.clusters = self._cluster_mols(mols, sim_cutoff=sim_cutoff)
+        else:
+            self.clusters = self._cluster_mols(mols)
         return self.clusters
     
 
-    def _cluster_mols(self, mols: List[Mol], sim_cutoff: float) -> List[int]:
+    def _cluster_mols(self, mols: List[Mol], *, sim_cutoff: float=0.8) -> List[int]:
         """
         Cluster Mol objects
 
@@ -80,13 +81,22 @@ class ChemicalCluster:
             fps = self.fp_list
 
         cluster_method = {
-            "Butina": self._cluster_butina(fps, sim_cutoff),
-            "KMeans": self._cluster_kmeans(fps)
+            "Butina": self._cluster_butina,
+            "KMeans": self._cluster_kmeans
         }
         if cluster_method[self.cluster_type] is None:
             raise ValueError(f"Clustering method {self.cluster_type} is not supported.")
 
-        return cluster_method[self.cluster_type]
+        if self.cluster_type == "KMeans":
+            clustered = cluster_method[self.cluster_type](fps)
+        else:
+            clustered = cluster_method[self.cluster_type](fps, sim_cutoff)
+        return clustered
+    
+
+    def get_mols(self, df: DataFrame, column_name: str="SMILES") -> List[Mol]:
+        assert column_name in df.columns
+        return [Chem.MolFromSmiles(s) for s in df[column_name]]
     
     
     def get_fps(self, mols: List[Mol]) -> List[ExplicitBitVect]:
@@ -112,7 +122,7 @@ class ChemicalCluster:
             self, 
             fps: list[ExplicitBitVect], 
             sim_cutoff: float
-    ) -> List[int]:
+    ) -> np.ndarray[int]:
         """
         Cluster compounds using the Butina clustering algorithm
 
@@ -142,11 +152,13 @@ class ChemicalCluster:
             for mol_idx in cluster:
                 cluster_ids[mol_idx] = idx
 
-        self.butina_clusters_ = [x - 1 for x in tqdm(cluster_ids, desc="Assigning clusters")]
+        self.butina_clusters_ = np.array(
+            [x - 1 for x in tqdm(cluster_ids, desc="Assigning clusters")]
+        )
         return self.butina_clusters_
     
 
-    def _cluster_kmeans(self, fps) -> List[int]:
+    def _cluster_kmeans(self, fps) -> np.ndarray[int]:
         """
         Cluster compounds using the Butina clustering algorithm
 
@@ -159,9 +171,11 @@ class ChemicalCluster:
         if self.n_clusters is None:
             self.n_clusters = 20
 
+        print(f"Size of FPs: {np.array(fps).shape}")
+
         k_means = KMeans(n_clusters=self.n_clusters, random_state=42, verbose=True)
         self.k_clusters_ = k_means.fit_predict(self.fp_list)
-        return self._k_clusters_
+        return self.k_clusters_
     
 
     def _calc_sillhoutte(self, X:  np.stack, min: int, max: int) -> DataFrame:
@@ -194,7 +208,7 @@ class ChemicalCluster:
     def _reduce_hits(
             self, 
             fps: List[ExplicitBitVect], 
-            n_components: int | float=0.95
+            n_components: int | float=150
     ) -> List[ExplicitBitVect]:
         """
         Do a PCA reduction on the chemical fingerprints
@@ -204,8 +218,8 @@ class ChemicalCluster:
 
         :returns: PCA reduced list of chemical bit fingerprints
         """
-        pca = PCA(n_components=n_components)
-        reduced = pca.fit_transform(fps)
+        reduction = PCA(n_components=n_components)
+        reduced = reduction.fit_transform(fps)
         return reduced
 
         
