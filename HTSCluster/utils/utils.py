@@ -13,7 +13,7 @@ from rdkit import Chem
 from rdkit.Chem import PandasTools
 from rdkit.Chem import Mol, Draw
 
-from ..cluster import ChemicalCluster
+from cluster import ChemicalCluster
 
 # %%
 def insert_clusters(clusters: ChemicalCluster, df: DataFrame) -> DataFrame:
@@ -32,12 +32,8 @@ def insert_mols(mols: List[np.ndarray], df: DataFrame) -> pd.DataFrame:
     """
     column_name: str = "Molecule"
 
-    """new_df = pd.DataFrame(df, columns=df.columns)
-    new_df[column_name] = mols
-    return new_df"""
-
     new_df = df.with_columns(
-        pl.lit(mols, dtype=pl.Object)
+        pl.Series(mols, dtype=pl.Object)
         .alias(column_name)
     )
     return new_df
