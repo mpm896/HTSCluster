@@ -40,7 +40,7 @@ def xlsx_from_polarsdf(
     :param outFile: Name of output file
     :param molCol: Name of the column containing Mol objects
     :param size: Image size
-    :param format: Image format
+    :param format: Column format
     """
     import xlsxwriter
 
