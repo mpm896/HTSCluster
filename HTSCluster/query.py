@@ -41,15 +41,13 @@ class Query:
 
         # Grab the SMILES column
         if 'SMILES' in df.columns:
-            smiles_list = list(df.select(['SMILES'])
-                        .drop_nulls())
+            smiles_list = (df.get_column('SMILES')
+                             .to_list())
         elif len(df.columns) == 1:
-            smiles_list = list(df)
-            if 'SMILES' in df:
-                smiles_list.remove('SMILES')
+            smiles_list = pl.Series(df).to_list()
         else:
             raise Exception("""Unclear format of data. Either Give Heading name
                             'SMILES' or input file with only one column""")
         
-        return cls(df)
+        return cls(smiles_list)
 

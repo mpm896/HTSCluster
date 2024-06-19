@@ -6,7 +6,6 @@ from PIL import Image
 from PIL.Image import Image
 
 import numpy as np
-import pandas as pd
 import polars as pl
 from polars import DataFrame
 from rdkit import Chem
@@ -25,7 +24,7 @@ def insert_clusters(clusters: ChemicalCluster, df: DataFrame) -> DataFrame:
     )
 
 
-def insert_mols(mols: List[np.ndarray], df: DataFrame) -> pd.DataFrame:
+def insert_mols(mols: List[np.ndarray], df: DataFrame) -> DataFrame:
     """ 
     Insert Mols into the DataFrame. This MUST be done with Pandas
     and NOT Polars because Polars doesn't seem to support this datatype

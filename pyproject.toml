@@ -4,12 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 version = "0.1"
-dependencies = [ "numpy", "pandas", "polars", "rdkit", "sklearn", "xlsxwriter"]
+dependencies = [
+    "numpy",
+    "polars",
+    "rdkit",
+    "sklearn",
+    "tqdm",
+    "xlsxwriter",
+    "xlsx2csv"]
 name = "HTSCluster"
 authors = [{ name = "Matthew Martinez", email = "mpmartinez896@gmail.com" }]
 description = "A small package to cluster data from a high throughput chemical screen, and query for neighboring compounds"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.7"
 classifiers = [
     # Language support
     "Programming Language :: Python :: 3",

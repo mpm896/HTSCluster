@@ -3,9 +3,9 @@ import time
 
 import numpy as np
 import polars as pl
-import pandas as pd
 
 from cluster import ChemicalCluster
+from query import Query
 from utils.utils import (
     insert_clusters, 
     insert_mols,
@@ -16,6 +16,8 @@ from utils.utils import (
 from utils.polars_xlsx import xlsx_from_polarsdf
 
 PATH_TO_CSV = "/Users/U1036725/Documents/PersonalProjects/HTSCluster/tests/data/Chembrigde_Div.csv"
+QUERY_CSV = "../tests/data/query.csv"
+QUERY_XLSX = "../tests/data/query.xlsx"
 
 # %%
 start = time.time()
@@ -23,6 +25,10 @@ df = (pl.read_csv(PATH_TO_CSV, truncate_ragged_lines=True)
                 .select(['SMILES'])
                 .drop_nulls()[:200])
 print(f"{time.time() - start} seconds to read CSV with Polars")
+
+""" --------------------------------------------------------- """
+""" Running to make sure the ChemicalCluster class is working """
+""" --------------------------------------------------------- """
 
 # %%
 df.head
@@ -45,4 +51,18 @@ df_with_mols = insert_mols(mols, new_df)
 
 # %%
 xlsx_from_polarsdf(df_with_mols, "testFile.xlsx", "Molecule")
+
+# %%
+""" ----------------------------------------------- """
+""" Running to make sure the Query class is working """
+""" ----------------------------------------------- """
+
+SMILES = [
+    "CC1=C(C=C2NC(CC(C2=C1)C3=CCC=C3)=O)O",
+    "O=C(NC1=CC(O)=C(C=C21)C)CC2C3=CC=CC=C3"
+]
+query = Query(SMILES=SMILES)
+# %%
+query_csv = Query.from_file(QUERY_CSV)
+query_xlsx = Query.from_file(QUERY_XLSX)
 # %%
