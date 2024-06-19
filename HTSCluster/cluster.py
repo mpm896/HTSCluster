@@ -1,3 +1,10 @@
+"""
+Clustering methods for chemical compounds from high throughput screening data
+
+@author: Matthew Martinez
+https://github.com/mpm896/HTSCluster
+"""
+
 from typing import Optional, List
 
 import numpy as np
