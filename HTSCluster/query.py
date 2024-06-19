@@ -6,20 +6,19 @@ input the SMILES of a dihydroquinolone and get the most related compounds back
 """
 from __future__ import annotations
 
-from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import List #, Optional
 
 import polars as pl
 
-from HTSCluster.cluster import ChemicalCluster
-from HTSCluster.utils.utils import (
+# from HTSCluster.cluster import ChemicalCluster
+"""from HTSCluster.utils.utils import (
     insert_clusters, 
     insert_mols,
     mols_to_img,
     write_csv, 
     write_xlsx
-)
+)"""
 
 class Query:
 
@@ -27,27 +26,27 @@ class Query:
         self.SMILES: List[str] = SMILES
 
     @classmethod
-    def from_file(cls, filaname: PathLike) -> Query:
+    def from_file(cls, filaname: str | Path) -> Query:
         file = Path(filaname)
         ext = file.suffix
         if not file.exists():
-            print(f"{file} does not exist. Check to ensure you spelled the file
-                   correctly and have entered the correct path to the file.")
+            print(f"""{file} does not exist. Check to ensure you spelled the file
+                   correctly and have entered the correct path to the file.""")
         assert ext in ['.xlsx', '.csv'], "File must be .xlsx or .csv format"
 
         if ext == '.xlsx':
-            df = pl.read_excel(file, truncate_ragged_lines=True)
+            df = pl.read_excel(file)
         elif ext == '.csv':
             df = pl.read_csv(file, truncate_ragged_lines=True)
 
         # Grab the SMILES column
         if 'SMILES' in df.columns:
-            df = list(pl.select(['SMILES'])
+            smiles_list = list(df.select(['SMILES'])
                         .drop_nulls())
         elif len(df.columns) == 1:
-            df = list(df)
+            smiles_list = list(df)
             if 'SMILES' in df:
-                df.remove('SMILES')
+                smiles_list.remove('SMILES')
         else:
             raise Exception("""Unclear format of data. Either Give Heading name
                             'SMILES' or input file with only one column""")

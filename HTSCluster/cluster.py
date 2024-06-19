@@ -3,25 +3,23 @@ Clustering methods for chemical compounds from high throughput screening data
 
 @author: Matthew Martinez
 https://github.com/mpm896/HTSCluster
+
+1. Need to check that _calc_silhouette method works
 """
 
-from typing import Optional, List
+from typing import Callable, Dict, List, Optional
 
 import numpy as np
 from rdkit import Chem  # type: ignore
-from rdkit.Chem import Mol
-from rdkit.Chem import AllChem, Draw, Descriptors  # type: ignore
-from rdkit.Chem import rdFMCS # type: ignore
-from rdkit.Chem.Scaffolds.MurckoScaffold import MakeScaffoldGeneric, MurckoScaffoldSmiles  # type: ignore
+from rdkit.Chem import Mol  # type: ignore
+from rdkit.Chem import AllChem # type: ignore # type: ignore
 from rdkit.DataStructs import BulkTanimotoSimilarity, ExplicitBitVect  # type: ignore
 from rdkit.ML.Cluster import Butina  # type: ignore
 import polars as pl
 from polars import DataFrame
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, silhouette_samples
 from sklearn.cluster import KMeans  # type: ignore
+from sklearn.metrics import silhouette_score  # type: ignore
 from sklearn.decomposition import PCA  # type: ignore
-from sklearn.neighbors import NearestNeighbors  # type: ignore
 from tqdm.auto import tqdm
 
 
@@ -40,7 +38,7 @@ class ChemicalCluster:
         self.reduce = reduce
         if cluster_type == "KMeans":
             self.n_clusters: Optional[int] = n_clusters if n_clusters is not None and n_clusters > 0 else None
-        self.do_sillhoute: bool = do_sillhoute
+        self.do_sillhoute: Optional[bool] = do_sillhoute
 
 
     def cluster_smiles(
@@ -48,7 +46,7 @@ class ChemicalCluster:
         df: pl.DataFrame, 
         sim_cutoff: float = 0.8, 
         column_name: str = "SMILES"
-    ) -> np.ndarray[int]:
+    ) -> List[int]:
         """
         Cluster compounds based on the SMILES strings
 
@@ -87,7 +85,7 @@ class ChemicalCluster:
         else:
             fps = self.fp_list
 
-        cluster_method = {
+        cluster_method: Dict[str, Callable] = {
             "Butina": self._cluster_butina,
             "KMeans": self._cluster_kmeans
         }
@@ -185,7 +183,7 @@ class ChemicalCluster:
         return self.k_clusters_
     
 
-    def _calc_sillhoutte(self, X:  np.stack, min: int, max: int) -> DataFrame:
+    def _calc_sillhouette(self, X:  np.stack, min: int, max: int) -> DataFrame:
         """
         Calculate sillhoute scores for KMeans clustering
 
