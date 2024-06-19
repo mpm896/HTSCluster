@@ -163,12 +163,9 @@ cython_debug/
 .ruff_cache/
 
 # Created images, csv file, and folders
-*.png 
-*.csv
+*.png
 scaffold*
 clusters_og/
-*.xls
-*.xlsx
 
 # Mac
 .DS_Store
