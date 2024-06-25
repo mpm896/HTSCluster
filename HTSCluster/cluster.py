@@ -22,6 +22,8 @@ from sklearn.metrics import silhouette_score  # type: ignore
 from sklearn.decomposition import PCA  # type: ignore
 from tqdm.auto import tqdm
 
+from .utils.utils import get_fps
+
 
 class ChemicalCluster:
     
@@ -78,7 +80,7 @@ class ChemicalCluster:
 
         *** FACTOR IN PCA REDUCTION ***
         """
-        self.fp_list = self.get_fps(mols)
+        self.fp_list = get_fps(self.fptype, mols)
         if self.reduce:
             self.reduced_fps = self._reduce_hits(self.fp_list)
             fps = self.reduced_fps

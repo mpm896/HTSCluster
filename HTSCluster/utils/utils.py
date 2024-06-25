@@ -1,20 +1,36 @@
 # %%
+from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 from typing import List
 from PIL import Image
 from PIL.Image import Image
+from typing import List, TYPE_CHECKING
 
 import numpy as np
 import polars as pl
 from polars import DataFrame
 from rdkit import Chem
+from rdkit.Chem import Mol
+from rdkit.Chem import AllChem
 from rdkit.Chem import PandasTools
 from rdkit.Chem import Mol, Draw
 
-from cluster import ChemicalCluster
+if TYPE_CHECKING:
+    from ..cluster import ChemicalCluster
 
 # %%
+def get_fps(fptype: str, mols: List | pl.Series) -> np.ndarray[Mol]:
+    fp_dict = {
+        "rdkit": [Chem.RDKFingerprint(x) for x in mols],
+        "morgan": [AllChem.GetMorganFingerprintAsBitVect(x, 2) for x in mols]
+    }
+
+    if fp_dict[fptype] is None:
+        raise ValueError(f"Fingerprint method {fptype} is not supported.")
+    
+    return np.array(fp_dict[fptype])
+
 def insert_clusters(clusters: ChemicalCluster, df: DataFrame) -> DataFrame:
     """ Insert column containing the clusters """
     cluster_type = clusters.cluster_type

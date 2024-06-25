@@ -8,7 +8,7 @@ dependencies = [
     "numpy",
     "polars",
     "rdkit",
-    "sklearn",
+    "scikit-learn",
     "tqdm",
     "xlsxwriter",
     "xlsx2csv"]
