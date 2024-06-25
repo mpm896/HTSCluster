@@ -22,7 +22,7 @@ from sklearn.metrics import silhouette_score  # type: ignore
 from sklearn.decomposition import PCA  # type: ignore
 from tqdm.auto import tqdm
 
-from .utils.utils import get_fps
+from HTSCluster.utils.utils import get_fps
 
 
 class ChemicalCluster:

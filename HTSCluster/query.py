@@ -12,10 +12,10 @@ from typing import List #, Optional
 import polars as pl
 from polars import DataFrame
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Mol
 from sklearn.neighbors import NearestNeighbors  # type: ignore
 
-from .utils.utils import get_fps
+from HTSCluster.utils.utils import get_fps
 
 # from HTSCluster.cluster import ChemicalCluster
 """from HTSCluster.utils.utils import (
@@ -37,6 +37,10 @@ class Query:
             {"SMILES": SMILES}) if isinstance(SMILES, list) else SMILES
         )
         self.fptype: str = fptype
+
+
+    def __repr__(self):
+        return f"{self.SMILES}"
 
 
     @classmethod
@@ -66,7 +70,7 @@ class Query:
 
 
     @property
-    def _mols(self):
+    def _mols(self) -> List[Mol]:
         return [Chem.MolFromSmiles(s) for (s) in self.SMILES['SMILES']]
     
 
@@ -88,14 +92,15 @@ class Query:
         :param n_neighbors: int
             n most similar compounds to return
 
-        TODO: STILL NEED TO TEST THIS
+        TODO: STILL NEED TO TEST THIS -> Seems to be working based on example.py
         """
         assert 'SMILES' in df.columns, "No SMILES column"
 
-        self.query_fps = get_fps(self.fptype, df['SMILES'])
+        _lib_mols = [Chem.MolFromSmiles(s) for (s) in df['SMILES']]
+        _lib_fps = get_fps(self.fptype, _lib_mols)
 
         # Initialize nearest neighbors and find k nearest neighbors
-        neigh = NearestNeighbors(n_neighbors=n_neighbors).fit(self.query_fps)
+        neigh = NearestNeighbors(n_neighbors=n_neighbors).fit(_lib_fps)
         kneighbors = neigh.kneighbors(self._fps)
         self.query_neighbors = df[kneighbors[1][0], :]
         return self.query_neighbors
@@ -113,25 +118,30 @@ class Query:
         """
         assert 'SMILES' in df.columns
 
-        df_assigned = self.query_neighbors['SMILES'].with_columns(
-            pl.Series('IS_HIT', None, dtype=pl.String)
+        df_assigned = DataFrame(self.query_neighbors['SMILES']).with_columns(
+            pl.lit(None, dtype=pl.String)
+              .alias('IS_HIT')
         )
+
+        print(df_assigned)
+
+        # Is this the efficient way to query for rows using Polars?
         for compound in df_assigned['SMILES']:
             if compound in self.SMILES['SMILES']:
-                df_assigned.with_columns(
+                df_assigned = df_assigned.with_columns(
                     (pl.when(pl.col('SMILES') == compound)
-                       .then(pl.lit("QUERY"))
-                       .otherwise(pl.col('IS_HIT')))
-                    .alias('IS_HIT')
+                            .then(pl.lit("QUERY"))
+                            .otherwise(pl.col('IS_HIT')))
+                        .alias('IS_HIT')
                 )
             elif compound in df['SMILES']:
-                df_assigned.with_columns(
+                df_assigned = df_assigned.with_columns(
                     (pl.when(pl.col('SMILES') == compound)
-                       .then(pl.lit("HIT"))
-                       .otherwise(pl.col('IS_HIT')))
-                    .alias('IS_HIT')
+                            .then(pl.lit("HIT"))
+                            .otherwise(pl.col('IS_HIT')))
+                        .alias('IS_HIT')
                 )
-
+        return df_assigned
 
 
 
