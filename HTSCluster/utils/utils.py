@@ -15,21 +15,31 @@ from rdkit.Chem import Mol
 from rdkit.Chem import AllChem
 from rdkit.Chem import PandasTools
 from rdkit.Chem import Mol, Draw
+from tqdm.auto import tqdm
 
 if TYPE_CHECKING:
     from ..cluster import ChemicalCluster
 
 # %%
 def get_fps(fptype: str, mols: List | pl.Series) -> np.ndarray[Mol]:
-    fp_dict = {
-        "rdkit": [Chem.RDKFingerprint(x) for x in mols],
-        "morgan": [AllChem.GetMorganFingerprintAsBitVect(x, 2) for x in mols]
-    }
-
-    if fp_dict[fptype] is None:
+    """ Get chemical bit fingerprints """
+    if fptype not in ['rdkit', 'morgan']:
         raise ValueError(f"Fingerprint method {fptype} is not supported.")
     
-    return np.array(fp_dict[fptype])
+    if fptype == 'rdkit':
+        return [Chem.RDKFingerprint(x) for x in tqdm(
+            mols, desc="Calculating chemical fingerprints..."
+        )]
+    # If fptype is 'morgan'
+    return [AllChem.GetMorganFingerprintAsBitVect(x, 2) for x in tqdm(
+            mols, desc="Calculating chemical fingerprints..."
+    )]
+
+
+def get_mols(df: DataFrame, column_name: str="SMILES") -> List[Mol]:
+    assert column_name in df.columns
+    return [Chem.MolFromSmiles(s) for s in df[column_name]]
+
 
 def insert_clusters(clusters: ChemicalCluster, df: DataFrame) -> DataFrame:
     """ Insert column containing the clusters """

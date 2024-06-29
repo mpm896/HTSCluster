@@ -6,16 +6,19 @@ input the SMILES of a dihydroquinolone and get the most related compounds back
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from typing import List #, Optional
 
+import numpy as np
 import polars as pl
 from polars import DataFrame
 from rdkit import Chem
 from rdkit.Chem import AllChem, Mol
 from sklearn.neighbors import NearestNeighbors  # type: ignore
+from tqdm.auto import tqdm
 
-from HTSCluster.utils.utils import get_fps
+from .utils.utils import get_fps
 
 # from HTSCluster.cluster import ChemicalCluster
 """from HTSCluster.utils.utils import (
@@ -83,7 +86,7 @@ class Query:
             self,
             df: DataFrame,
             n_neighbors: int=50
-    ) -> pl.Series:
+    ) -> dict[str, pl.Series]:
         """
         Get the closest compounds to your query compound
         
@@ -95,18 +98,25 @@ class Query:
         TODO: STILL NEED TO TEST THIS -> Seems to be working based on example.py
         """
         assert 'SMILES' in df.columns, "No SMILES column"
+        if n_neighbors == -1:
+            n_neighbors = len(df)
 
-        _lib_mols = [Chem.MolFromSmiles(s) for (s) in df['SMILES']]
+        _lib_mols = [Chem.MolFromSmiles(s) for (s) in tqdm(
+            df['SMILES'], desc='Getting mols from SMILES'
+        )]
         _lib_fps = get_fps(self.fptype, _lib_mols)
 
         # Initialize nearest neighbors and find k nearest neighbors
         neigh = NearestNeighbors(n_neighbors=n_neighbors).fit(_lib_fps)
-        kneighbors = neigh.kneighbors(self._fps)
-        self.query_neighbors = df[kneighbors[1][0], :]
+
+        self.query_neighbors = {}
+        for i in tqdm(range(len(self.SMILES)), desc="Querying for nearest neighbors..."):
+            kneighbors = neigh.kneighbors(np.array(self._fps[i]).reshape(1,-1))
+            self.query_neighbors[self.SMILES[i].item()] = df[kneighbors[1][0], :]
         return self.query_neighbors
     
 
-    def assign_query_hits(self, df: DataFrame) -> DataFrame:
+    def assign_query_hits(self, df: DataFrame) -> dict[str, DataFrame]:
         """
         Assign each neighbor as a hit or not
 
@@ -118,30 +128,30 @@ class Query:
         """
         assert 'SMILES' in df.columns
 
-        df_assigned = DataFrame(self.query_neighbors['SMILES']).with_columns(
-            pl.lit(None, dtype=pl.String)
-              .alias('IS_HIT')
-        )
+        for c in self.query_neighbors.copy():
+            df_assigned = DataFrame(self.query_neighbors[c]['SMILES']).with_columns(
+                pl.lit(None, dtype=pl.String)
+                .alias('IS_HIT')
+            )
 
-        print(df_assigned)
-
-        # Is this the efficient way to query for rows using Polars?
-        for compound in df_assigned['SMILES']:
-            if compound in self.SMILES['SMILES']:
-                df_assigned = df_assigned.with_columns(
-                    (pl.when(pl.col('SMILES') == compound)
-                            .then(pl.lit("QUERY"))
-                            .otherwise(pl.col('IS_HIT')))
-                        .alias('IS_HIT')
-                )
-            elif compound in df['SMILES']:
-                df_assigned = df_assigned.with_columns(
-                    (pl.when(pl.col('SMILES') == compound)
-                            .then(pl.lit("HIT"))
-                            .otherwise(pl.col('IS_HIT')))
-                        .alias('IS_HIT')
-                )
-        return df_assigned
+            # Is this the efficient way to query for rows using Polars?
+            for compound in df_assigned['SMILES']:
+                if compound in self.SMILES['SMILES']:
+                    df_assigned = df_assigned.with_columns(
+                        (pl.when(pl.col('SMILES') == compound)
+                                .then(pl.lit("QUERY"))
+                                .otherwise(pl.col('IS_HIT')))
+                            .alias('IS_HIT')
+                    )
+                elif compound in df['SMILES']:
+                    df_assigned = df_assigned.with_columns(
+                        (pl.when(pl.col('SMILES') == compound)
+                                .then(pl.lit("HIT"))
+                                .otherwise(pl.col('IS_HIT')))
+                            .alias('IS_HIT')
+                    )
+            
+        return self.query_neighbors
 
 
 

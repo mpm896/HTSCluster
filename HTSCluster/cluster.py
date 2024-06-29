@@ -22,7 +22,7 @@ from sklearn.metrics import silhouette_score  # type: ignore
 from sklearn.decomposition import PCA  # type: ignore
 from tqdm.auto import tqdm
 
-from HTSCluster.utils.utils import get_fps
+from .utils.utils import get_fps
 
 
 class ChemicalCluster:
@@ -176,7 +176,7 @@ class ChemicalCluster:
         ***PLACEHOLD SELF.N_CLUSTERS FOR NOW. CHANGE TO BE 10% OF TOTAL COMPOUNDS)
         """
         if self.n_clusters is None:
-            self.n_clusters = 20
+            self.n_clusters = len(self.fp_list) // 10
 
         print(f"Size of FPs: {np.array(fps).shape}")
 

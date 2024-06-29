@@ -4,16 +4,16 @@ import time
 import numpy as np
 import polars as pl
 
-from cluster import ChemicalCluster
-from query import Query
-from utils.utils import (
+from .cluster import ChemicalCluster
+from .query import Query
+from .utils.utils import (
     insert_clusters, 
     insert_mols,
     mols_to_img,
     write_csv, 
     write_xlsx
 )
-from utils.polars_xlsx import xlsx_from_polarsdf
+from .utils.polars_xlsx import xlsx_from_polarsdf
 
 PATH_TO_CSV = "/Users/U1036725/Documents/PersonalProjects/HTSCluster/tests/data/Chembrigde_Div.csv"
 QUERY_CSV = "../tests/data/query.csv"
@@ -63,16 +63,17 @@ import numpy as np
 import polars as pl
 from polars import selectors as cs
 
-from cluster import ChemicalCluster
-from query import Query
-from utils.utils import (
+from .cluster import ChemicalCluster
+from .query import Query
+from .utils.utils import (
     insert_clusters, 
     insert_mols,
+    get_mols,
     mols_to_img,
     write_csv, 
     write_xlsx
 )
-from utils.polars_xlsx import xlsx_from_polarsdf
+from .utils.polars_xlsx import xlsx_from_polarsdf
 
 PATH_TO_CSV = "/Users/U1036725/Documents/PersonalProjects/HTSCluster/tests/data/Chembrigde_Div.csv"
 PATH_TO_HITS = "/Users/U1036725/Documents/PersonalProjects/HTSCluster/tests/data/HTS_SG.csv"
@@ -83,7 +84,7 @@ QUERY_XLSX = "../tests/data/query.xlsx"
 start = time.time()
 df = (pl.read_csv(PATH_TO_CSV, truncate_ragged_lines=True)
                 .select(cs.contains('SMILES'))
-                .drop_nulls()) # [:5000])
+                .drop_nulls()[:5000])
 print(f"{time.time() - start} seconds to read CSV with Polars")
 
 start = time.time()
@@ -100,7 +101,7 @@ query_csv = Query.from_file(QUERY_CSV)
 query_xlsx = Query.from_file(QUERY_XLSX)
 # %%
 start = time.time()
-query_csv.query_neighbors(df=df, n_neighbors=5000)
+query_csv.query_neighbors(df=df, n_neighbors=-1)
 print(f"{time.time() - start} seconds to query for neighbors")
 # %%
 # Rename the column if it is not 'SMILES'
@@ -111,4 +112,11 @@ hits
 
 # %%
 assigned = query_csv.assign_query_hits(hits)
+# %%
+# Save the df of neighbors with images
+for c in assigned:
+    mols = get_mols(assigned[c])
+    df_with_mols = insert_mols(mols, assigned[c])
+    xlsx_from_polarsdf(df_with_mols, f"../tests/output/testneighborsoutput_{c}.xlsx", "Molecule")
+
 # %%
