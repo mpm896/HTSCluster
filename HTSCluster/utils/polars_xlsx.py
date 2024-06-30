@@ -28,7 +28,7 @@ if hasattr(rdkit, 'IPythonConsole'):
 def xlsx_from_polarsdf(
     df: pl.DataFrame,
     outFile: str | PathLike,
-    molCol: str='ROMol',
+    molCol: str='Molecule',
     size: Tuple[int,int]=(300,300),
     formats: Optional[str]=None
 ) -> None:

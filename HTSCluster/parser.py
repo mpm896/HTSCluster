@@ -2,6 +2,7 @@
 Parse the CLI args
 """
 import argparse
+from pathlib import Path
 
 def parse() -> argparse.Namespace:
     """
@@ -31,7 +32,7 @@ def parse() -> argparse.Namespace:
     parser.add_argument('--lib', type=argparse.FileType('r'), help='file containing the chemical library')
     parser.add_argument(
         '-t', '--to-cluster',
-        default='hits',
+        default='both',
         choices=['hits', 'lib', 'both'],
         dest='cluster_choice',
         help='Which file to cluster: hits, library, or both.'
@@ -79,6 +80,19 @@ def parse() -> argparse.Namespace:
         type=int,
         default=50,
         help='Number of desired similar compounds to get back. Default is 50. For the entire list of the input hits or libraries (ranked by similarity to query compound), enter -1'
+    )
+    parser.add_argument(
+        '-o', '--out-format',
+        dest='out_format',
+        choices=['.xlsx', '.csv'],
+        default='.xlsx',
+        help='Format of output file. Default is .xlsx (Excel file)'
+    )
+    parser.add_argument(
+        '-p', '--out-path',
+        dest='out_path',
+        default=Path.cwd(),
+        help='Path to output file. Default is current directory.'
     )
 
     return parser.parse_args()

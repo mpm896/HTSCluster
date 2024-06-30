@@ -17,25 +17,12 @@ from rdkit.Chem import PandasTools
 from rdkit.Chem import Mol, Draw
 from tqdm.auto import tqdm
 
+from .polars_xlsx import xlsx_from_polarsdf
+
 if TYPE_CHECKING:
     from ..cluster import ChemicalCluster
 
 # %%
-def fix_column_names(df: DataFrame, name: str='SMILES') -> DataFrame:
-    """
-    Rename column to desired name if the column name has a potential error, like an extra space
-
-    :param df: Polars DataFrame
-    :param name: str: desired column name
-    """
-    cols = df.columns
-    for col in cols:
-        if name in col:
-            selected = col
-            break
-    return df.rename({selected: name})
-
-
 def get_fps(fptype: str, mols: List | pl.Series) -> List[Mol]:
     """ Get chemical bit fingerprints """
     if fptype not in ['rdkit', 'morgan']:
@@ -109,5 +96,20 @@ def write_xlsx(
         )
         return
     df.write_excel(f"{path}/{base_name}")
+
+
+def write_file(df: DataFrame, filename: str) -> None:
+    """
+    Write a file to .csv or .xlsx format
+    """
+    path = filename.split('/')[:-1]
+    base_name = filename.split('/')[-1]
+    if Path(base_name).suffix == '.csv':
+        write_csv(df, path, base_name)
+    elif Path(base_name).suffix == '.xlsx':
+        xlsx_from_polarsdf(df, filename, molCol='Molecule')
+    else:
+        raise ValueError('Not a supported file format for saving.')
+
 
 # %%
