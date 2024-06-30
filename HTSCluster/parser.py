@@ -33,7 +33,7 @@ def parse() -> argparse.Namespace:
         '-t', '--to-cluster',
         default='hits',
         choices=['hits', 'lib', 'both'],
-        dest='cluster_choice'
+        dest='cluster_choice',
         help='Which file to cluster: hits, library, or both.'
     )
     parser.add_argument(
