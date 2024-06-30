@@ -21,7 +21,22 @@ if TYPE_CHECKING:
     from ..cluster import ChemicalCluster
 
 # %%
-def get_fps(fptype: str, mols: List | pl.Series) -> np.ndarray[Mol]:
+def fix_column_names(df: DataFrame, name: str='SMILES') -> DataFrame:
+    """
+    Rename column to desired name if the column name has a potential error, like an extra space
+
+    :param df: Polars DataFrame
+    :param name: str: desired column name
+    """
+    cols = df.columns
+    for col in cols:
+        if name in col:
+            selected = col
+            break
+    return df.rename({selected: name})
+
+
+def get_fps(fptype: str, mols: List | pl.Series) -> List[Mol]:
     """ Get chemical bit fingerprints """
     if fptype not in ['rdkit', 'morgan']:
         raise ValueError(f"Fingerprint method {fptype} is not supported.")

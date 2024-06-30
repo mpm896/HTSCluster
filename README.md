@@ -9,11 +9,9 @@
 
 ## TODO
 ### Priority:
-1. Add option -1 to query_neighbors() in Query to allow for n_neighbors = length of library -> DONE
-2. Save the dataframe of neighbors of a query, with Mol images -> DONE
-3. Fix Query to produce one dataframe per query SMILES -> DONE
-4. Write up main script for CLI program with argparse or typer -> IN PROGRESS (argparse)
-5. Add testing for clustering and for remainder of Query
+1. Write up main script for CLI program with argparse or typer -> IN PROGRESS (argparse)
+2. Move bulk of main into separate scripts: prepare_data, process_clusters, process_queries, etc 
+3. Add testing for clustering and for remainder of Query
 
 ### Extras:
 1. Ensure that Silhouette analysis works

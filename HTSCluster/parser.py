@@ -30,6 +30,13 @@ def parse() -> argparse.Namespace:
     parser.add_argument('--hits', type=argparse.FileType('r'), help='file containing the chemical hits')
     parser.add_argument('--lib', type=argparse.FileType('r'), help='file containing the chemical library')
     parser.add_argument(
+        '-t', '--to-cluster',
+        default='hits',
+        choices=['hits', 'lib', 'both'],
+        dest='cluster_choice'
+        help='Which file to cluster: hits, library, or both.'
+    )
+    parser.add_argument(
         '-f', '--fptype', 
         dest='fptype', 
         default='rdkit', 
@@ -46,6 +53,7 @@ def parse() -> argparse.Namespace:
     parser.add_argument(
         '-r', '--reduce',
         action='store_true',
+        dest='reduce',
         help='Whether or not to do PCA reduction before clustering. Defult is True'
     )
     parser.add_argument(
