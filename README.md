@@ -9,10 +9,8 @@
 
 ## TODO
 ### Priority:
-1. Write up main script for CLI program with argparse or typer -> IN PROGRESS (argparse - Clustering done, need to implement Query)
-2. Move bulk of main into separate scripts: prepare_data, process_clusters, process_queries, etc 
-3. Add testing for clustering and for remainder of Query
-4. Update docs on how to install and use
+1. Add testing for clustering and for remainder of Query
+2. Update docs on how to install and use
 
 ### Extras:
 1. Ensure that Silhouette analysis works
