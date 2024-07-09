@@ -72,6 +72,7 @@ def parse() -> argparse.Namespace:
     parser.add_argument(
         '-q', '--query', 
         dest='query',
+        action='store_true',
         help='Query sequences for which you want to find similar compounds. Can be just one SMILES, or a CSV or Excel file containing a column of SMILES'
     )
     parser.add_argument(

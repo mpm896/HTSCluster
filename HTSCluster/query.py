@@ -86,7 +86,7 @@ class Query:
             self,
             df: DataFrame,
             n_neighbors: int=50
-    ) -> dict[str, pl.Series]:
+    ) -> dict[str, DataFrame]:
         """
         Get the closest compounds to your query compound
         
@@ -112,7 +112,7 @@ class Query:
         self.query_neighbors = {}
         for i in tqdm(range(len(self.SMILES)), desc="Querying for nearest neighbors..."):
             kneighbors = neigh.kneighbors(np.array(self._fps[i]).reshape(1,-1))
-            self.query_neighbors[self.SMILES[i].item()] = df[kneighbors[1][0], :]
+            self.query_neighbors[self.SMILES[i].item()] = DataFrame(df[kneighbors[1][0], :])
         return self.query_neighbors
     
 

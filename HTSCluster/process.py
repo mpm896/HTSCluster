@@ -1,7 +1,10 @@
+from typing import Optional
+
 import polars as pl
 from polars import DataFrame
 
 from .prepare import DataFrameClusters
+from .query import Query
 from .utils.utils import insert_clusters, insert_mols
 
 def process_clusters(clusters: DataFrameClusters) -> DataFrame:
@@ -21,4 +24,29 @@ def process_clusters(clusters: DataFrameClusters) -> DataFrame:
     clusters = chem_cluster.cluster_smiles(df)
     mols = chem_cluster.get_mols(df)
     return insert_mols(mols, insert_clusters(chem_cluster, df))
+
+
+def process_query(
+        query: Query, 
+        df: DataFrame, 
+        n_neighbors: int=-1, 
+        hits: Optional[DataFrame]=None
+    ) -> dict[str, DataFrame]:
+    """
+    Query for similar compounds
+
+    :param query: Query object containing the SMILES of interest
+    :param df: Polars DataFrame of chemical compounds
+
+    :returns DataFrame: DataFrame of chemical compounds with assigned clusters and molecule images
+    """
+    queried = query.query_neighbors(df=df, n_neighbors=n_neighbors)
+
+    # If the hits were provided
+    if hits is not None:
+        assigned = query.assign_query_hits(hits)
+        return assigned
+    
+    return queried
+    
     
