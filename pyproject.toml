@@ -5,22 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 version = "0.1"
 dependencies = [
-    "numpy",
-    "polars",
-    "rdkit",
-    "scikit-learn",
-    "tqdm",
-    "xlsxwriter",
-    "xlsx2csv"]
+    "numpy ~= 1.26.3",
+    "polars ~= 0.20.31",
+    "rdkit ~= 2023.9.5",
+    "scikit-learn ~= 1.2.2",
+    "tqdm ~= 4.65.0",
+    "xlsxwriter ~= 3.2.0",
+    "xlsx2csv ~= 0.8.2"
+]
 name = "HTSCluster"
 authors = [{ name = "Matthew Martinez", email = "mpmartinez896@gmail.com" }]
-description = "A small package to cluster data from a high throughput chemical screen, and query for neighboring compounds"
+description = "A small package to cluster data from a high throughput chemical screen, and query for similar compounds"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
     # Language support
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -29,6 +29,12 @@ classifiers = [
     # License
     "License :: OSI Approved :: BSD License",
 ]
+
+[project.optional-dependencies]
+tests = ["pytest"]
+
+[project.scripts]
+cluster-hits = "HTSCluster.main:main"
 
 
 [project.urls]
