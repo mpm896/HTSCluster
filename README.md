@@ -98,11 +98,17 @@ If doing an exploratory analysis, everything is centered around `ChemicalCluster
 
 ### Times to write CSV
 1. 315 compounds with images
-PandasTools - 3.1 s
-xlsx_from_polarsdf (same algo as PandasTools) - 3.0 s
-xlsx_from_polarsdf (utilizing Polars methods) - 1.9 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PandasTools - 3.1 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xlsx_from_polarsdf (same algo as PandasTools) - 3.0 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xlsx_from_polarsdf (utilizing Polars methods) - 1.9 s
 
 2. 43,000 compounds with images 
-PandasTools - 656.0 s
-xlsx_from_polarsdf (same algo as PandasTools) - 636.9 s
-xlsx_from_polarsdf (utilizing Polars methods) - 463.6 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PandasTools - 656.0 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xlsx_from_polarsdf (same algo as PandasTools) - 636.9 s
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xlsx_from_polarsdf (utilizing Polars methods) - 463.6 s
