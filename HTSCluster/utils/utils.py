@@ -11,13 +11,11 @@ import numpy as np
 import polars as pl
 from polars import DataFrame
 from rdkit import Chem
-from rdkit.Chem import Mol
 from rdkit.Chem import AllChem
-from rdkit.Chem import PandasTools
 from rdkit.Chem import Mol, Draw
 from tqdm.auto import tqdm
 
-from .polars_xlsx import xlsx_from_polarsdf
+from .polars_xlsx import xlsx_from_polarsdf, xlsx_from_polarsdf_deprecated
 
 if TYPE_CHECKING:
     from ..cluster import ChemicalCluster
@@ -80,24 +78,6 @@ def write_csv(
     df.write_csv(f"{path}/{base_name}")
 
 
-def write_xlsx(
-        df: DataFrame,
-        path: PathLike=Path.cwd(),
-        base_name: str="cluster_results.xlsx"
-) -> None:
-    """ 
-    Write to an Excel file. If has Molecule images,
-    use rdkit PandasTools to save the file
-    """
-    molCol = "Molecule"
-    if molCol in df.columns:
-        PandasTools.SaveXlsxFromFrame(
-            df, f"{path}/{base_name}", molCol=molCol
-        )
-        return
-    df.write_excel(f"{path}/{base_name}")
-
-
 def write_file(df: DataFrame, filename: str) -> None:
     """
     Write a file to .csv or .xlsx format
@@ -110,6 +90,20 @@ def write_file(df: DataFrame, filename: str) -> None:
         xlsx_from_polarsdf(df, filename, molCol='Molecule')
     else:
         raise ValueError('Not a supported file format for saving.')
+    
+
+def write_file_deprecated(df: DataFrame, filename: str) -> None:
+    """
+    Write a file to .csv or .xlsx format
+    """
+    path = filename.split('/')[:-1]
+    base_name = filename.split('/')[-1]
+    if Path(base_name).suffix == '.csv':
+        write_csv(df, path, base_name)
+    elif Path(base_name).suffix == '.xlsx':
+        xlsx_from_polarsdf_deprecated(df, filename, molCol='Molecule')
+    else:
+        raise ValueError('Not a supported file format for saving.')    
 
 
 # %%

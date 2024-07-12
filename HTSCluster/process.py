@@ -22,6 +22,23 @@ def process_clusters(clusters: DataFrameClusters) -> DataFrame:
     print(f"{df = }")
     
     clusters = chem_cluster.cluster_smiles(df)
+    return insert_clusters(chem_cluster, df)
+
+def process_clusters_deprecated(clusters: DataFrameClusters) -> DataFrame:
+    """
+    Cluster the data
+
+    :param clusters: DataFrameClusters dict containing the DataFrame of chemical compounds and the ChemicalCluster object
+    :returns DataFrame: DataFrame of chemical compounds with assigned clusters and molecule images
+    """
+
+    df = clusters['df']
+    chem_cluster = clusters['cluster']
+
+    print("----- CLUSTERING -----")
+    print(f"{df = }")
+    
+    clusters = chem_cluster.cluster_smiles(df)
     mols = chem_cluster.get_mols(df)
     return insert_mols(mols, insert_clusters(chem_cluster, df))
 

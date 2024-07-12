@@ -8,10 +8,13 @@ to search for similar compounds from a set of input compounds
 @author: Matt Martinez
 https://github.com/mpm896/HTSCluster
 """
+import time
 from .parser import parse
 from .prepare import check_input, prepare_clusters, prepare_query
 from .process import process_clusters, process_query
 from .utils.utils import get_mols, insert_mols, write_file
+
+DEBUGGING = False
 
 def main():
     # Gather the CLI args and ensure that either a file name, or the hits or lib are specified
@@ -35,6 +38,28 @@ def main():
                 print('----------------')
                 print(f'Writing {out_name}.....')
                 write_file(df_clusters[file]['df'], out_name)
+
+
+            if DEBUGGING:
+                import pandas as pd
+                import polars as pl
+                from rdkit.Chem import PandasTools
+                from .process import process_clusters_deprecated
+                from .utils.utils import write_file_deprecated
+                if df_clusters[file]['df'] is not None:
+                    df_clusters[file]['df'] = process_clusters_deprecated(df_clusters[file])
+                    out_name = f'{args.out_path}/{file}-output{args.out_format}'
+                    
+                    print('----------------')
+                    print(df_clusters)
+                    print('----------------')
+                    print(f'Writing {out_name}.....')
+
+                    start = time.time()
+                    PandasTools.SaveXlsxFromFrame(pl.DataFrame.to_pandas(df_clusters[file]['df']), out_name, molCol='Molecule', size=(300,300))
+                    print(f"{time.time() - start} seconds to write xlsx with PandasTools")
+
+                    write_file_deprecated(df_clusters[file]['df'], out_name)
     # Do the query
     else:
         query, lib, hits = prepare_query(args)
