@@ -172,3 +172,6 @@ clusters_og/
 
 # VSCode
 .vscode/
+
+# Output test data
+tests/data/output/

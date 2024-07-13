@@ -15,7 +15,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import Mol, Draw
 from tqdm.auto import tqdm
 
-from .polars_xlsx import xlsx_from_polarsdf, xlsx_from_polarsdf_deprecated
+from .polars_xlsx import xlsx_from_polarsdf
 
 if TYPE_CHECKING:
     from ..cluster import ChemicalCluster
@@ -66,7 +66,7 @@ def insert_mols(mols: List[np.ndarray], df: DataFrame) -> DataFrame:
 
 def mols_to_img(mols: List[Mol]) -> List[Image]:
     """ Convert MOLs to PNG Images """
-    return [Draw.MolToImage(m) for m in mols]
+    return [Draw.MolToImage(m) for m in tqdm(mols, desc='Converting to images...')]
 
 
 # %%
@@ -90,20 +90,7 @@ def write_file(df: DataFrame, filename: str) -> None:
         xlsx_from_polarsdf(df, filename, molCol='Molecule')
     else:
         raise ValueError('Not a supported file format for saving.')
-    
-
-def write_file_deprecated(df: DataFrame, filename: str) -> None:
-    """
-    Write a file to .csv or .xlsx format
-    """
-    path = filename.split('/')[:-1]
-    base_name = filename.split('/')[-1]
-    if Path(base_name).suffix == '.csv':
-        write_csv(df, path, base_name)
-    elif Path(base_name).suffix == '.xlsx':
-        xlsx_from_polarsdf_deprecated(df, filename, molCol='Molecule')
-    else:
-        raise ValueError('Not a supported file format for saving.')    
+       
 
 
 # %%
