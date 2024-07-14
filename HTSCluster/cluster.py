@@ -12,7 +12,7 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 from rdkit import Chem  # type: ignore
 from rdkit.Chem import Mol  # type: ignore
-from rdkit.Chem import AllChem # type: ignore # type: ignore
+from rdkit.Chem import AllChem  # type: ignore # type: ignore
 from rdkit.DataStructs import BulkTanimotoSimilarity, ExplicitBitVect  # type: ignore
 from rdkit.ML.Cluster import Butina  # type: ignore
 import polars as pl
@@ -26,28 +26,25 @@ from .utils.utils import get_fps
 
 
 class ChemicalCluster:
-    
     def __init__(
-            self,
-            fptype: str = "rdkit",
-            cluster_type: str = "Butina",
-            reduce: bool = False,
-            n_clusters: Optional[int] = None,
-            do_sillhoute: Optional[bool] = False,
+        self,
+        fptype: str = "rdkit",
+        cluster_type: str = "Butina",
+        reduce: bool = False,
+        n_clusters: Optional[int] = None,
+        do_sillhoute: Optional[bool] = False,
     ) -> None:
         self.fptype: str = fptype
         self.cluster_type: str = cluster_type
         self.reduce = reduce
         if cluster_type == "KMeans":
-            self.n_clusters: Optional[int] = n_clusters if n_clusters is not None and n_clusters > 0 else None
+            self.n_clusters: Optional[int] = (
+                n_clusters if n_clusters is not None and n_clusters > 0 else None
+            )
         self.do_sillhoute: Optional[bool] = do_sillhoute
 
-
     def cluster_smiles(
-        self, 
-        df: pl.DataFrame, 
-        sim_cutoff: float = 0.8, 
-        column_name: str = "SMILES"
+        self, df: pl.DataFrame, sim_cutoff: float = 0.8, column_name: str = "SMILES"
     ) -> List[int]:
         """
         Cluster compounds based on the SMILES strings
@@ -66,9 +63,8 @@ class ChemicalCluster:
         else:
             self.clusters = self._cluster_mols(mols)
         return self.clusters
-    
 
-    def _cluster_mols(self, mols: List[Mol], *, sim_cutoff: float=0.8) -> List[int]:
+    def _cluster_mols(self, mols: List[Mol], *, sim_cutoff: float = 0.8) -> List[int]:
         """
         Cluster Mol objects
 
@@ -89,7 +85,7 @@ class ChemicalCluster:
 
         cluster_method: Dict[str, Callable] = {
             "Butina": self._cluster_butina,
-            "KMeans": self._cluster_kmeans
+            "KMeans": self._cluster_kmeans,
         }
         if cluster_method[self.cluster_type] is None:
             raise ValueError(f"Clustering method {self.cluster_type} is not supported.")
@@ -99,13 +95,11 @@ class ChemicalCluster:
         else:
             clustered = cluster_method[self.cluster_type](fps, sim_cutoff)
         return clustered
-    
 
-    def get_mols(self, df: DataFrame, column_name: str="SMILES") -> List[Mol]:
+    def get_mols(self, df: DataFrame, column_name: str = "SMILES") -> List[Mol]:
         assert column_name in df.columns
         return [Chem.MolFromSmiles(s) for s in df[column_name]]
-    
-    
+
     def get_fps(self, mols: List[Mol]) -> List[ExplicitBitVect]:
         """
         Get the chemical bit fingerprint from Mol objects for each compound
@@ -116,19 +110,16 @@ class ChemicalCluster:
         """
         fp_dict = {
             "rdkit": [Chem.RDKFingerprint(x) for x in mols],
-            "morgan": [AllChem.GetMorganFingerprintAsBitVect(x, 2) for x in mols]
+            "morgan": [AllChem.GetMorganFingerprintAsBitVect(x, 2) for x in mols],
         }
 
         if fp_dict[self.fptype] is None:
             raise ValueError(f"Fingerprint method {self.fptype} is not supported.")
-        
+
         return fp_dict[self.fptype]
-    
-    
+
     def _cluster_butina(
-            self, 
-            fps: list[ExplicitBitVect], 
-            sim_cutoff: float
+        self, fps: list[ExplicitBitVect], sim_cutoff: float
     ) -> np.ndarray[int]:
         """
         Cluster compounds using the Butina clustering algorithm
@@ -148,12 +139,10 @@ class ChemicalCluster:
         self._dist_matrix = dists
 
         # Cluster
-        mol_clusters = tqdm(Butina.ClusterData(
-            dists, 
-            nfps, 
-            dist_cutoff, 
-            isDistData=True
-        ), desc="Clustering")
+        mol_clusters = tqdm(
+            Butina.ClusterData(dists, nfps, dist_cutoff, isDistData=True),
+            desc="Clustering",
+        )
         cluster_ids = [0] * nfps
         for idx, cluster in enumerate(mol_clusters):
             for mol_idx in cluster:
@@ -163,7 +152,6 @@ class ChemicalCluster:
             [x - 1 for x in tqdm(cluster_ids, desc="Assigning clusters")]
         )
         return self.butina_clusters_
-    
 
     def _cluster_kmeans(self, fps) -> np.ndarray[int]:
         """
@@ -183,39 +171,37 @@ class ChemicalCluster:
         k_means = KMeans(n_clusters=self.n_clusters, random_state=42, verbose=True)
         self.k_clusters_ = k_means.fit_predict(self.fp_list)
         return self.k_clusters_
-    
 
-    def _calc_sillhouette(self, X:  np.stack, min: int, max: int) -> DataFrame:
+    def _calc_sillhouette(self, X: np.stack, min: int, max: int) -> DataFrame:
         """
         Calculate sillhoute scores for KMeans clustering
 
         :param X: numpy stack of fingerprints
         :param min: minimum number of clusters
         :param max: maximum number of clusters
-        
+
         :returns: DataFrame object with cluster number and sillhoutte score
 
         *** CALCULATE MIN AS 5% OF TOTAL COMPOUNDS, MAX AS 20% OF TOTAL COMPOUNDS ***
         """
         clusters = range(min, max)
         scores: List = []
-        for k in tqdm(clusters, desc="Calculating scores for {min} to {max} " \
-                                     "clusters. This could take a while"):
-            km = KMeans(n_clusters=k, n_init='auto', random_state=42)
+        for k in tqdm(
+            clusters,
+            desc="Calculating scores for {min} to {max} "
+            "clusters. This could take a while",
+        ):
+            km = KMeans(n_clusters=k, n_init="auto", random_state=42)
             cluster_labels = km.fit_predict(X)
             score = silhouette_score(X, cluster_labels)
             scores.append([k, score])
 
-        return pl.DataFrame(scores, schema={
-            "K": pl.UInt8, 
-            "Silhouette Score": pl.Float32
-        })
-    
+        return pl.DataFrame(
+            scores, schema={"K": pl.UInt8, "Silhouette Score": pl.Float32}
+        )
 
     def _reduce_hits(
-            self, 
-            fps: List[ExplicitBitVect], 
-            n_components: int | float=150
+        self, fps: List[ExplicitBitVect], n_components: int | float = 150
     ) -> List[ExplicitBitVect]:
         """
         Do a PCA reduction on the chemical fingerprints
@@ -228,18 +214,3 @@ class ChemicalCluster:
         reduction = PCA(n_components=n_components)
         reduced = reduction.fit_transform(fps)
         return reduced
-
-        
-
-        
-
-
-
-
-
-    
-
-
-
-
-
