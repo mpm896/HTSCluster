@@ -51,7 +51,7 @@ if __name__ == "__main__":
     from .utils import get_mols
 
     df_large = file_to_df("tests/data/Chembrigde_Div.csv")
-    large_mols = get_mols(df_large)
+    # large_mols = get_mols(df_large)
 
     small_df = file_to_df("tests/data/HITS.csv")
 

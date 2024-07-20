@@ -9,7 +9,7 @@ from rdkit import Chem  # type: ignore
 from rdkit.Chem import Draw, PandasTools  # type: ignore
 
 from ..prepare import file_to_df
-from ..utils.polars_xlsx import xlsx_from_polarsdf
+from ..utils.polars_xlsx import xlsx_from_polarsdf, xlsx_from_polarsdf_chunks
 from ..utils.utils import get_mols, insert_mols
 
 
@@ -286,6 +286,54 @@ def benchmark_parallel() -> None:
     print(f"Took {time.time() - start} seconds to write concurrently")
 
 
+def benchmark_chunks() -> None:
+    """ Benchmark xlsx writing with chunk - no multiprocessing """
+    from ..prepare import file_to_df
+    from ..utils.utils import get_mols
+
+    OUT_DIR = "tests/data/output/"
+    small_df = file_to_df("tests/data/HITS.csv")
+    large_df = file_to_df("tests/data/Chembrigde_Div.csv")
+
+    print()
+    print("STARTING TO WRITE XLSX FILE")
+    print()
+    print("--------------------")
+    print("Writing small xlsx with images")
+    print("--------------------")
+    print()
+
+    start = time.time()
+    xlsx_from_polarsdf_chunks(
+        small_df,
+        f"{OUT_DIR}/small-with-images-chunks.xlsx",
+        molCol="Molecule",
+        size=(300, 300),
+        chunksize=1000
+    )
+    small_chunks = time.time() - start
+
+    print("--------------------")
+    print("Writing large xlsx with images")
+    print("--------------------")
+    print()
+
+    start = time.time()
+    xlsx_from_polarsdf_chunks(
+        large_df,
+        f"{OUT_DIR}/large-with-images-chunks.xlsx",
+        molCol="Molecule",
+        size=(300, 300),
+        chunksize=1000
+    )
+    large_chunks = time.time() - start
+
+    print(f"315 compounds: {small_chunks}")
+    print(f"43,000 compounds: {large_chunks}")
+
+
+
 if __name__ == "__main__":
     # benchmark_write_xlsx()
-    benchmark_parallel()
+    # benchmark_parallel()
+    benchmark_chunks()
